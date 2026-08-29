@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* Accessibility Text Size Modes for Elderly & Mothers */
+body.text-size-large {
+  font-size: 110%;
+}
+
+body.text-size-xlarge {
+  font-size: 125%;
+}
+
+/* Better touch targets & contrast */
+button, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}

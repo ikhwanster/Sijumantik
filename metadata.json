@@ -1,0 +1,11 @@
+{
+  "name": "SiJumantik - Pantau Jentik & Tanggap DBD Nasional",
+  "description": "Aplikasi kesehatan digital Satu Rumah Satu Jumantik dengan pemetaan GIS, deteksi jentik AI, EWS darurat, integrasi Puskesmas, dan analisis risiko prediktif.",
+  "requestFramePermissions": [
+    "geolocation",
+    "notifications"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
