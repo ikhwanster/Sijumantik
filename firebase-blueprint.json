@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "UserProfile": {
+      "collection": "users",
+      "fields": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "rt": { "type": "string" },
+        "rw": { "type": "string" },
+        "kelurahan": { "type": "string" },
+        "avatar": { "type": "string" },
+        "points": { "type": "number" },
+        "stars": { "type": "number" },
+        "badgeTitle": { "type": "string" },
+        "pin": { "type": "string" },
+        "registeredAt": { "type": "string" },
+        "completedMissions": { "type": "array" }
+      }
+    },
+    "HomeInspectionRecord": {
+      "collection": "inspections",
+      "fields": {
+        "id": { "type": "string" },
+        "houseAddress": { "type": "string" },
+        "rt": { "type": "string" },
+        "rw": { "type": "string" },
+        "kelurahan": { "type": "string" },
+        "inspectorName": { "type": "string" },
+        "inspectorRole": { "type": "string" },
+        "date": { "type": "string" },
+        "isClean": { "type": "boolean" },
+        "notes": { "type": "string" },
+        "proofPhoto": { "type": "string" },
+        "inspectionPoints": { "type": "array" }
+      }
+    },
+    "DengueCaseReport": {
+      "collection": "cases",
+      "fields": {
+        "id": { "type": "string" },
+        "patientName": { "type": "string" },
+        "age": { "type": "number" },
+        "gender": { "type": "string" },
+        "address": { "type": "string" },
+        "rt": { "type": "string" },
+        "rw": { "type": "string" },
+        "kelurahan": { "type": "string" },
+        "onsetDate": { "type": "string" },
+        "reportDate": { "type": "string" },
+        "status": { "type": "string" },
+        "severity": { "type": "string" },
+        "faskesName": { "type": "string" },
+        "coordinates": { "type": "object" },
+        "peStatus": { "type": "string" }
+      }
+    },
+    "CommunityReport": {
+      "collection": "communityReports",
+      "fields": {
+        "id": { "type": "string" },
+        "reporterName": { "type": "string" },
+        "reporterPhone": { "type": "string" },
+        "category": { "type": "string" },
+        "location": { "type": "string" },
+        "description": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string" },
+        "coordinates": { "type": "object" }
+      }
+    }
+  }
+}

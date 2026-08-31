@@ -46,7 +46,19 @@ import {
   LogisticsItem 
 } from './types/jumantik';
 import { UserProfile, UserRole } from './types/auth';
-import { Smartphone, Monitor, Star, Sparkles } from 'lucide-react';
+import { 
+  subscribeUsers, 
+  saveUserToDb, 
+  subscribeInspections, 
+  saveInspectionToDb, 
+  subscribeCases, 
+  saveCaseToDb, 
+  subscribeCommunityReports, 
+  saveCommunityReportToDb, 
+  subscribeLogistics, 
+  saveLogisticsToDb 
+} from './services/dbService';
+import { Smartphone, Monitor, Star, Sparkles, Database } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('jumantik');
@@ -147,6 +159,54 @@ export default function App() {
     setSpeechEnabled(voiceEnabled);
   }, [voiceEnabled]);
 
+  // Real-time synchronization with Firestore
+  useEffect(() => {
+    const unsubUsers = subscribeUsers((firestoreUsers) => {
+      if (firestoreUsers && firestoreUsers.length > 0) {
+        setAllUsers(firestoreUsers);
+        if (currentUser) {
+          const freshCurrent = firestoreUsers.find((u) => u.id === currentUser.id);
+          if (freshCurrent) {
+            setCurrentUser(freshCurrent);
+            setUserRole(freshCurrent.role);
+          }
+        }
+      }
+    });
+
+    const unsubInspections = subscribeInspections((firestoreInspections) => {
+      if (firestoreInspections && firestoreInspections.length > 0) {
+        setInspections(firestoreInspections);
+      }
+    });
+
+    const unsubCases = subscribeCases((firestoreCases) => {
+      if (firestoreCases && firestoreCases.length > 0) {
+        setCases(firestoreCases);
+      }
+    });
+
+    const unsubCommunity = subscribeCommunityReports((firestoreReports) => {
+      if (firestoreReports && firestoreReports.length > 0) {
+        setCommunityReports(firestoreReports);
+      }
+    });
+
+    const unsubLogistics = subscribeLogistics((firestoreLogistics) => {
+      if (firestoreLogistics && firestoreLogistics.length > 0) {
+        setLogistics(firestoreLogistics);
+      }
+    });
+
+    return () => {
+      unsubUsers();
+      unsubInspections();
+      unsubCases();
+      unsubCommunity();
+      unsubLogistics();
+    };
+  }, []);
+
   // Save users & current user
   useEffect(() => {
     try {
@@ -206,18 +266,23 @@ export default function App() {
     setUserRole(user.role);
   };
 
-  const handleRegisterUser = (newUser: UserProfile) => {
-    const updatedUsers = [newUser, ...allUsers];
+  const handleRegisterUser = async (newUser: UserProfile) => {
+    const updatedUsers = [newUser, ...allUsers.filter((u) => u.id !== newUser.id)];
     setAllUsers(updatedUsers);
     setCurrentUser(newUser);
     setUserRole(newUser.role);
+    try {
+      await saveUserToDb(newUser);
+    } catch (e) {
+      console.error('Failed to sync registered user to Firestore:', e);
+    }
   };
 
   const handleLogoutUser = () => {
     setCurrentUser(null);
   };
 
-  const handleAwardStars = (starsToAdd: number, pointsToAdd: number, missionId?: string) => {
+  const handleAwardStars = async (starsToAdd: number, pointsToAdd: number, missionId?: string) => {
     if (!currentUser) return;
     const updatedMissions = missionId && currentUser.completedMissions
       ? Array.from(new Set([...currentUser.completedMissions, missionId]))
@@ -232,21 +297,67 @@ export default function App() {
 
     setCurrentUser(updatedUser);
     setAllUsers(allUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
+    try {
+      await saveUserToDb(updatedUser);
+    } catch (e) {
+      console.error('Failed to sync points to Firestore:', e);
+    }
   };
 
-  const handleSaveInspection = (newRecord: HomeInspectionRecord) => {
-    setInspections([newRecord, ...inspections]);
+  const handleSaveInspection = async (newRecord: HomeInspectionRecord) => {
+    setInspections([newRecord, ...inspections.filter((i) => i.id !== newRecord.id)]);
     setInspectionSubTab('history');
+    try {
+      await saveInspectionToDb(newRecord);
+    } catch (e) {
+      console.error('Failed to sync inspection to Firestore:', e);
+    }
   };
 
-  const handleAddCommunityReport = (newRep: CommunityReport) => {
-    setCommunityReports([newRep, ...communityReports]);
+  const handleAddCommunityReport = async (newRep: CommunityReport) => {
+    setCommunityReports([newRep, ...communityReports.filter((r) => r.id !== newRep.id)]);
+    try {
+      await saveCommunityReportToDb(newRep);
+    } catch (e) {
+      console.error('Failed to sync community report to Firestore:', e);
+    }
   };
 
-  const handleUpvoteReport = (id: string) => {
-    setCommunityReports(
-      communityReports.map((r) => (r.id === id ? { ...r, upvotes: r.upvotes + 1 } : r))
-    );
+  const handleUpvoteReport = async (id: string) => {
+    const target = communityReports.find((r) => r.id === id);
+    if (target) {
+      const updated = { ...target, upvotes: target.upvotes + 1 };
+      setCommunityReports(
+        communityReports.map((r) => (r.id === id ? updated : r))
+      );
+      try {
+        await saveCommunityReportToDb(updated);
+      } catch (e) {
+        console.error('Failed to sync upvote to Firestore:', e);
+      }
+    }
+  };
+
+  const handleUpdateCases = async (updatedCases: DengueCaseReport[]) => {
+    setCases(updatedCases);
+    if (updatedCases.length > 0) {
+      try {
+        await saveCaseToDb(updatedCases[0]);
+      } catch (e) {
+        console.error('Failed to sync case to Firestore:', e);
+      }
+    }
+  };
+
+  const handleUpdateLogistics = async (updatedLogistics: LogisticsItem[]) => {
+    setLogistics(updatedLogistics);
+    for (const item of updatedLogistics) {
+      try {
+        await saveLogisticsToDb(item);
+      } catch (e) {
+        console.error('Failed to sync logistics to Firestore:', e);
+      }
+    }
   };
 
   const togglePhoneFrame = () => {
@@ -432,11 +543,11 @@ export default function App() {
             {activeTab === 'puskesmas' && (
               <PuskesmasDashboard
                 cases={cases}
-                onUpdateCases={setCases}
+                onUpdateCases={handleUpdateCases}
                 facilities={facilities}
                 inspections={inspections}
                 logistics={logistics}
-                onUpdateLogistics={setLogistics}
+                onUpdateLogistics={handleUpdateLogistics}
               />
             )}
 
