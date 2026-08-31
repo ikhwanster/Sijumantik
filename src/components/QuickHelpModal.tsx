@@ -50,67 +50,67 @@ export const QuickHelpModal: React.FC<QuickHelpModalProps> = ({
           {/* Audio read button */}
           <button
             onClick={handleReadGuide}
-            className="w-full flex items-center justify-center gap-2 bg-amber-50 hover:bg-amber-100 border-2 border-amber-300 text-amber-950 font-bold p-3 rounded-2xl text-sm transition-all"
+            className="w-full flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 font-medium p-2.5 rounded-xl text-xs sm:text-sm transition-colors cursor-pointer"
           >
-            <Volume2 className="w-5 h-5 text-amber-700" />
-            <span>🔊 Tekan Disini Untuk Mendengarkan Suara Panduan</span>
+            <Volume2 className="w-4 h-4 text-emerald-600" />
+            <span>Dengarkan Suara Panduan</span>
           </button>
 
           {/* 3 Simple Steps with large visual icons */}
           <div className="space-y-3">
             {/* Step 1 */}
-            <div className="flex items-start gap-3.5 p-3.5 bg-emerald-50/80 rounded-2xl border border-emerald-200">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white font-black text-lg flex items-center justify-center shrink-0">
+            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="w-7 h-7 rounded-lg bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center shrink-0">
                 1
               </div>
               <div>
-                <h4 className="font-extrabold text-sm sm:text-base text-emerald-950">Lihat Wadah Air di Rumah</h4>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-0.5">
-                  Cek bak mandi, ember, tatakan pot bunga, atau penampung air kulkas apakah ada jentik (jentik nyamuk berenang).
+                <h4 className="font-semibold text-xs sm:text-sm text-slate-900">Periksa Wadah Air di Rumah</h4>
+                <p className="text-xs text-slate-600 leading-relaxed mt-0.5">
+                  Cek bak mandi, ember, tatakan pot bunga, atau penampung air kulkas apakah ada jentik nyamuk.
                 </p>
               </div>
             </div>
 
             {/* Step 2 */}
-            <div className="flex items-start gap-3.5 p-3.5 bg-teal-50/80 rounded-2xl border border-teal-200">
-              <div className="w-10 h-10 rounded-2xl bg-teal-600 text-white font-black text-lg flex items-center justify-center shrink-0">
+            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="w-7 h-7 rounded-lg bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center shrink-0">
                 2
               </div>
               <div>
-                <h4 className="font-extrabold text-sm sm:text-base text-teal-950">Pilih Bersih atau Ada Jentik</h4>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-0.5">
-                  Bila semua bersih, cukup klik tombol besar <strong>"🌟 Alhamdulillah, Semua Bersih"</strong>.
+                <h4 className="font-semibold text-xs sm:text-sm text-slate-900">Tentukan Kondisi Wadah</h4>
+                <p className="text-xs text-slate-600 leading-relaxed mt-0.5">
+                  Pilih status bersih atau ada jentik, atau gunakan tombol cepat "Tandai Semua Bersih".
                 </p>
               </div>
             </div>
 
             {/* Step 3 */}
-            <div className="flex items-start gap-3.5 p-3.5 bg-cyan-50/80 rounded-2xl border border-cyan-200">
-              <div className="w-10 h-10 rounded-2xl bg-cyan-700 text-white font-black text-lg flex items-center justify-center shrink-0">
+            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <div className="w-7 h-7 rounded-lg bg-emerald-700 text-white font-semibold text-xs flex items-center justify-center shrink-0">
                 3
               </div>
               <div>
-                <h4 className="font-extrabold text-sm sm:text-base text-cyan-950">Tekan Kirim Laporan</h4>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-0.5">
-                  Klik tombol hijau besar <strong>"Kirim Laporan"</strong>. Laporan otomatis tercatat dan bisa dibagikan ke WhatsApp RT!
+                <h4 className="font-semibold text-xs sm:text-sm text-slate-900">Kirim Laporan 1R1J</h4>
+                <p className="text-xs text-slate-600 leading-relaxed mt-0.5">
+                  Tekan tombol kirim. Laporan tersimpan dan siap dibagikan ke kader atau grup WhatsApp RT.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-amber-100/70 p-3 rounded-2xl border border-amber-300 text-xs text-amber-950 flex items-center gap-2">
-            <Heart className="w-5 h-5 text-red-500 fill-red-500 shrink-0" />
+          <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 flex items-center gap-2">
+            <Heart className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>
-              <strong>Pesan Sayang:</strong> Luangkan waktu 5 menit setiap Jumat pagi untuk menguras bak mandi demi kesehatan cucu dan keluarga!
+              Luangkan waktu 5 menit secara berkala untuk lingkungan sehat bebas demam berdarah.
             </span>
           </div>
         </div>
 
         {/* Footer CTA */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3">
+        <div className="p-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
           <button
             onClick={onClose}
-            className="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-xl text-xs sm:text-sm"
+            className="px-3.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 font-medium rounded-lg text-xs border border-slate-200 cursor-pointer"
           >
             Tutup
           </button>
@@ -120,10 +120,10 @@ export const QuickHelpModal: React.FC<QuickHelpModalProps> = ({
               onClose();
               onStartInspection();
             }}
-            className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2.5 sm:py-3 px-4 rounded-xl text-sm sm:text-base shadow-md shadow-emerald-600/30"
+            className="flex-1 flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-medium py-1.5 sm:py-2 px-3.5 rounded-lg text-xs sm:text-sm transition-colors cursor-pointer"
           >
-            <span>Mulai Isi Form Sekarang</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>Mulai Pemeriksaan</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

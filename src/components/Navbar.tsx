@@ -12,10 +12,18 @@ import {
   PhoneCall,
   Sparkles,
   Download,
-  FileSpreadsheet
+  FileSpreadsheet,
+  User,
+  Star,
+  Trophy,
+  LogIn,
+  LogOut,
+  Flame,
+  HelpCircle
 } from 'lucide-react';
+import { UserProfile, UserRole } from '../types/auth';
 
-export type NavTab = 'jumantik' | 'peta' | 'puskesmas' | 'komunitas' | 'prediksi' | 'edukasi' | 'evakuasi';
+export type NavTab = 'jumantik' | 'misi' | 'peta' | 'puskesmas' | 'komunitas' | 'prediksi' | 'edukasi' | 'evakuasi';
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -23,9 +31,12 @@ interface NavbarProps {
   openSosModal: () => void;
   openReminderModal: () => void;
   openExportModal: () => void;
+  openAuthModal: () => void;
   unreadAlertCount: number;
-  userRole: 'warga' | 'kader' | 'puskesmas';
-  setUserRole: (role: 'warga' | 'kader' | 'puskesmas') => void;
+  userRole: UserRole;
+  setUserRole: (role: UserRole) => void;
+  currentUser: UserProfile | null;
+  onLogout: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -34,219 +45,220 @@ export const Navbar: React.FC<NavbarProps> = ({
   openSosModal,
   openReminderModal,
   openExportModal,
+  openAuthModal,
   unreadAlertCount,
   userRole,
   setUserRole,
+  currentUser,
+  onLogout
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-emerald-100 shadow-xs">
-      {/* Top emergency & community badge strip */}
-      <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-cyan-900 text-white px-3 sm:px-4 py-2 text-xs font-medium">
+      {/* Top Mobile Status & Emergency Strip */}
+      <div className="bg-slate-900 text-white px-3 sm:px-4 py-1.5 text-xs font-medium border-b border-slate-800">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+          {/* User Status / Greeting Pill */}
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 bg-amber-400 text-emerald-950 px-2.5 py-0.5 rounded-full font-black text-[11px] tracking-wide uppercase shadow-xs">
-              🌸 Gerakan 1R1J
+            <button
+              onClick={openAuthModal}
+              className="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1 rounded-lg text-xs transition-colors text-left cursor-pointer"
+              title="Klik untuk Ganti Akun / Masuk"
+            >
+              <span className="text-sm">{currentUser?.avatar || '👤'}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-white text-xs">
+                  {currentUser?.name || 'Tamu / Warga'}
+                </span>
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-medium px-1.5 py-0.2 rounded border border-emerald-500/30">
+                  {currentUser?.role === 'anak'
+                    ? 'Cilik'
+                    : currentUser?.role === 'warga'
+                    ? 'Warga'
+                    : currentUser?.role === 'kader'
+                    ? 'Kader'
+                    : 'Nakes'}
+                </span>
+              </div>
+            </button>
+
+            <span className="hidden sm:inline text-slate-400 text-xs">
+              • Satu Rumah Satu Jumantik
             </span>
-            <span className="font-bold text-emerald-100 hidden sm:inline">Satu Rumah Satu Jumantik</span>
-            <span className="hidden md:inline text-emerald-300">|</span>
-            <span className="hidden md:inline text-emerald-200 font-medium">Lindungi Anak & Cucu dari Nyamuk DBD</span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          {/* Quick Actions (Auth, Export, Reminder, SOS) */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Login / Switch Account Button */}
+            <button
+              onClick={openAuthModal}
+              className="inline-flex items-center gap-1 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+            >
+              <User className="w-3.5 h-3.5 text-slate-400" />
+              <span>{currentUser ? 'Akun' : 'Masuk'}</span>
+            </button>
+
+            {/* Export Reports */}
             <button
               onClick={openExportModal}
-              className="flex items-center gap-1.5 text-amber-200 hover:text-white transition-colors bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 px-3 py-1 rounded-xl text-xs font-bold shadow-2xs"
+              className="hidden sm:inline-flex items-center gap-1 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer"
               title="Unduh Laporan PDF & Excel"
             >
-              <Download className="w-3.5 h-3.5 text-amber-300" />
+              <Download className="w-3.5 h-3.5 text-slate-400" />
               <span>Unduh Laporan</span>
             </button>
 
+            {/* Reminder */}
             <button
               onClick={openReminderModal}
-              className="flex items-center gap-1.5 text-emerald-100 hover:text-white transition-colors bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-xl text-xs font-bold shadow-2xs"
+              className="inline-flex items-center gap-1 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer"
             >
-              <Bell className="w-3.5 h-3.5 text-amber-300" />
-              <span>Alarm PSN Jumat</span>
+              <Bell className="w-3.5 h-3.5 text-slate-400" />
+              <span className="hidden xs:inline">Alarm PSN</span>
               {unreadAlertCount > 0 && (
-                <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                <span className="bg-red-500 text-white text-[10px] px-1.5 rounded font-semibold">
                   {unreadAlertCount}
                 </span>
               )}
             </button>
-
-            {/* Quick Role switcher */}
-            <div className="flex items-center gap-1 bg-emerald-950/80 p-1 rounded-xl border border-emerald-500/40">
-              <button
-                onClick={() => setUserRole('warga')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                  userRole === 'warga'
-                    ? 'bg-emerald-500 text-white shadow-xs'
-                    : 'text-emerald-200 hover:text-white'
-                }`}
-              >
-                🏠 Ibu/Warga
-              </button>
-              <button
-                onClick={() => setUserRole('kader')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                  userRole === 'kader'
-                    ? 'bg-teal-500 text-white shadow-xs'
-                    : 'text-emerald-200 hover:text-white'
-                }`}
-              >
-                📋 Kader RT
-              </button>
-              <button
-                onClick={() => setUserRole('puskesmas')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
-                  userRole === 'puskesmas'
-                    ? 'bg-cyan-600 text-white shadow-xs'
-                    : 'text-emerald-200 hover:text-white'
-                }`}
-              >
-                🏥 Puskesmas
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Navbar */}
-      <div className="max-w-7xl mx-auto px-4 py-2.5 sm:py-3">
+      {/* Main Navbar Bar */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2">
         <div className="flex items-center justify-between gap-3">
-          {/* Logo & title */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('jumantik')}>
-            <div className="relative">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center">
-                <span className="w-1.5 h-1.5 bg-emerald-800 rounded-full animate-ping" />
-              </span>
+          {/* Brand Logo */}
+          <div
+            className="flex items-center gap-2.5 cursor-pointer"
+            onClick={() => setActiveTab('jumantik')}
+          >
+            <div className="w-8 h-8 rounded-lg bg-emerald-700 flex items-center justify-center text-white text-base shrink-0">
+              🏡
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h1 className="text-xl font-black text-slate-900 tracking-tight">SiJumantik</h1>
-                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.5 rounded border border-emerald-300">
-                  v2.5 Digital
+                <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+                  SiJumantik
+                </h1>
+                <span className="bg-slate-100 text-slate-700 text-[10px] font-medium px-1.5 py-0.2 rounded border border-slate-200">
+                  Kemenkes RI
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium leading-none">
-                Pantau Jentik Mandiri & Mitigasi Tanggap DBD
+              <p className="text-[11px] text-slate-500 font-normal leading-none">
+                Pemantauan Jentik Nyamuk & 1R1J
               </p>
             </div>
           </div>
 
-          {/* Navigation Links (Desktop) */}
-          <nav className="hidden lg:flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60">
+          {/* Navigation Links for Desktop */}
+          <nav className="hidden lg:flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg border border-slate-200">
             <button
               onClick={() => setActiveTab('jumantik')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 activeTab === 'jumantik'
-                  ? 'bg-white text-emerald-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                  ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Pantau Mandiri</span>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Pantau 1R1J</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('misi')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeTab === 'misi'
+                  ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Trophy className="w-3.5 h-3.5 text-amber-600" />
+              <span>Misi Cilik</span>
             </button>
 
             <button
               onClick={() => setActiveTab('peta')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 activeTab === 'peta'
-                  ? 'bg-white text-teal-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                  ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <MapPin className="w-4 h-4 text-teal-600" />
-              <span>Peta GIS & Hotspot</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('puskesmas')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'puskesmas'
-                  ? 'bg-white text-cyan-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-            >
-              <Building2 className="w-4 h-4 text-cyan-600" />
-              <span>Dasbor Faskes</span>
+              <MapPin className="w-3.5 h-3.5 text-teal-600" />
+              <span>Peta Wilayah</span>
             </button>
 
             <button
               onClick={() => setActiveTab('komunitas')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 activeTab === 'komunitas'
-                  ? 'bg-white text-emerald-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                  ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Users className="w-4 h-4 text-emerald-600" />
-              <span>Lapor Komunitas</span>
+              <Users className="w-3.5 h-3.5 text-cyan-600" />
+              <span>Lapor Got</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('prediksi')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === 'prediksi'
-                  ? 'bg-white text-indigo-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+              onClick={() => setActiveTab('puskesmas')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeTab === 'puskesmas'
+                  ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <TrendingUp className="w-4 h-4 text-indigo-600" />
-              <span>Analisis Risiko AI</span>
+              <Building2 className="w-3.5 h-3.5 text-blue-600" />
+              <span>Puskesmas</span>
             </button>
 
             <button
               onClick={() => setActiveTab('edukasi')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 activeTab === 'edukasi'
-                  ? 'bg-white text-amber-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                  ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <BookOpen className="w-4 h-4 text-amber-600" />
-              <span>Edukasi & Kuis</span>
+              <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Edukasi 3M+</span>
             </button>
 
             <button
               onClick={() => setActiveTab('evakuasi')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 activeTab === 'evakuasi'
-                  ? 'bg-white text-rose-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+                  ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <AlertTriangle className="w-4 h-4 text-rose-600" />
-              <span>Evakuasi & Triage</span>
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+              <span>Gejala & Triage</span>
             </button>
           </nav>
 
-          {/* Action SOS and Mobile quick bar */}
+          {/* SOS Emergency Call - Minimalist */}
           <div className="flex items-center gap-2">
             <button
               onClick={openSosModal}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-red-500/20 active:scale-95 transition-all animate-pulse"
+              className="inline-flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg font-medium text-xs transition-colors cursor-pointer"
             >
-              <PhoneCall className="w-4 h-4" />
-              <span>SOS DBD</span>
+              <PhoneCall className="w-3.5 h-3.5" />
+              <span>SOS Darurat</span>
             </button>
           </div>
         </div>
 
-        {/* Mobile Horizontal Scroll Navigation */}
-        <div className="flex lg:hidden overflow-x-auto no-scrollbar gap-1.5 pt-2 pb-1 border-t border-slate-100 mt-2">
+        {/* Mobile Horizontal Quick Tab Scroller */}
+        <div className="flex lg:hidden overflow-x-auto no-scrollbar gap-1 pt-2 pb-0.5 border-t border-slate-100 mt-2">
           {[
-            { id: 'jumantik', label: '1R1J Mandiri', icon: CheckCircle2 },
-            { id: 'peta', label: 'Peta GIS', icon: MapPin },
+            { id: 'jumantik', label: '1R1J Pantau', icon: CheckCircle2 },
+            { id: 'misi', label: 'Misi Cilik', icon: Trophy },
+            { id: 'peta', label: 'Peta Wilayah', icon: MapPin },
+            { id: 'komunitas', label: 'Lapor Got', icon: Users },
             { id: 'puskesmas', label: 'Puskesmas', icon: Building2 },
-            { id: 'komunitas', label: 'Komunitas', icon: Users },
-            { id: 'prediksi', label: 'Prediksi AI', icon: TrendingUp },
-            { id: 'edukasi', label: 'Edukasi & Kuis', icon: BookOpen },
-            { id: 'evakuasi', label: 'Evakuasi', icon: AlertTriangle },
+            { id: 'edukasi', label: 'Edukasi', icon: BookOpen },
+            { id: 'evakuasi', label: 'Gejala DBD', icon: AlertTriangle },
           ].map((tab) => {
             const Icon = tab.icon;
             const isSel = activeTab === tab.id;
@@ -254,13 +266,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as NavTab)}
-                className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                   isSel
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    ? 'bg-slate-900 text-white font-semibold'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon className="w-3 h-3" />
                 <span>{tab.label}</span>
               </button>
             );

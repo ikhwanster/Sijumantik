@@ -62,29 +62,29 @@ export const EmergencyBanner: React.FC<EmergencyBannerProps> = ({
           </div>
 
           {/* Quick action buttons */}
-          <div className="flex items-center flex-wrap gap-2 w-full md:w-auto justify-end">
+          <div className="flex items-center flex-wrap gap-1.5 w-full md:w-auto justify-end">
             <button
               onClick={handleTestAlarm}
-              className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-white/30 hover:bg-white/20 transition-all ${
-                isAlarmPlaying ? 'bg-amber-400 text-slate-900 animate-bounce' : 'bg-white/10 text-white'
+              className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-md border border-white/30 hover:bg-white/10 transition-colors cursor-pointer ${
+                isAlarmPlaying ? 'bg-amber-400 text-slate-950 font-semibold' : 'bg-transparent text-white'
               }`}
               title="Bunyikan Sirene Peringatan Warga"
             >
               <Volume2 className="w-3.5 h-3.5" />
-              <span>{isAlarmPlaying ? 'Sirene Aktif...' : 'Tes Sirene EWS'}</span>
+              <span>{isAlarmPlaying ? 'Sirene Aktif...' : 'Tes Sirene'}</span>
             </button>
 
             <button
               onClick={onOpenMap}
-              className="flex items-center gap-1 text-xs font-bold bg-white text-red-700 hover:bg-red-50 px-3 py-1.5 rounded-lg shadow-sm transition-all"
+              className="inline-flex items-center gap-1 text-xs font-medium bg-white text-slate-900 hover:bg-slate-100 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
             >
-              <MapPin className="w-3.5 h-3.5" />
-              <span>Lihat Klaster Peta</span>
+              <MapPin className="w-3.5 h-3.5 text-rose-600" />
+              <span>Peta Klaster</span>
             </button>
 
             <button
               onClick={onOpenEvacuation}
-              className="flex items-center gap-1 text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 px-3 py-1.5 rounded-lg shadow-sm transition-all"
+              className="inline-flex items-center gap-1 text-xs font-medium bg-slate-900 text-white hover:bg-slate-800 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
             >
               <span>Alur Rujukan</span>
               <ChevronRight className="w-3.5 h-3.5" />
@@ -92,7 +92,7 @@ export const EmergencyBanner: React.FC<EmergencyBannerProps> = ({
 
             <button
               onClick={() => setDismissed(true)}
-              className="text-white/70 hover:text-white p-1 rounded-md hover:bg-white/10 ml-1"
+              className="text-white/80 hover:text-white p-1 rounded-md hover:bg-white/10 cursor-pointer"
               aria-label="Tutup Peringatan"
             >
               <X className="w-4 h-4" />

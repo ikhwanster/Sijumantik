@@ -7,89 +7,126 @@ import {
   ShieldCheck, 
   Sparkles, 
   Layers,
-  Thermometer
+  Thermometer,
+  Film
 } from 'lucide-react';
 import { MosquitoLifecycle } from './MosquitoLifecycle';
 import { SymptomTriage } from './SymptomTriage';
 import { JumantikQuiz } from './JumantikQuiz';
+import { MediaSlider } from '../Media/MediaSlider';
 
 interface EducationHubProps {
   onOpenSos: () => void;
+  onNavigateTab?: (tabName: string) => void;
 }
 
-export const EducationHub: React.FC<EducationHubProps> = ({ onOpenSos }) => {
-  const [activeEduTab, setActiveEduTab] = useState<'siklus' | 'triase' | 'perbedaan' | 'kuis'>('triase');
+export const EducationHub: React.FC<EducationHubProps> = ({ onOpenSos, onNavigateTab }) => {
+  const [activeEduTab, setActiveEduTab] = useState<'galeri' | 'triase' | 'siklus' | 'perbedaan' | 'kuis'>('galeri');
 
   return (
-    <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-teal-900 via-emerald-900 to-slate-900 text-white rounded-2xl p-5 sm:p-7 shadow-lg">
-        <div className="space-y-2 max-w-3xl">
-          <div className="inline-flex items-center gap-1.5 bg-teal-500/20 border border-teal-400/30 text-teal-200 text-xs font-bold px-3 py-1 rounded-full">
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>Pusat Edukasi Visual & Interaktif DBD</span>
-          </div>
-          <h2 className="text-xl sm:text-3xl font-black tracking-tight">
-            Edukasi Pencegahan & Pengenalan Gejala DBD Keluarga
-          </h2>
-          <p className="text-xs sm:text-sm text-teal-100/90 leading-relaxed">
-            Pahami siklus metamorfosis nyamuk, kenali fase kritis pelana kuda, hitung kebutuhan hidrasi cairan, dan uji wawasan keluarga Anda melalui kuis cerdas berhadiah sertifikat.
-          </p>
-        </div>
+    <div className="space-y-5">
+      {/* Top Media Slider Banner */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
+        <MediaSlider onNavigateTab={onNavigateTab} />
       </div>
 
       {/* Navigation Subtabs */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
         <button
-          onClick={() => setActiveEduTab('triase')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
-            activeEduTab === 'triase'
-              ? 'bg-slate-900 text-white shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+          onClick={() => setActiveEduTab('galeri')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
+            activeEduTab === 'galeri'
+              ? 'bg-slate-900 text-white'
+              : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
           }`}
         >
-          <Thermometer className="w-4 h-4 text-rose-500" />
-          <span>Fase Demam & Triase Kritis</span>
+          <Film className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Film & Poster 1R1J</span>
+        </button>
+
+        <button
+          onClick={() => setActiveEduTab('triase')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
+            activeEduTab === 'triase'
+              ? 'bg-slate-900 text-white'
+              : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
+          }`}
+        >
+          <Thermometer className="w-3.5 h-3.5 text-rose-500" />
+          <span>Fase Demam & Triase</span>
         </button>
 
         <button
           onClick={() => setActiveEduTab('siklus')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
             activeEduTab === 'siklus'
-              ? 'bg-slate-900 text-white shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+              ? 'bg-slate-900 text-white'
+              : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
           }`}
         >
-          <Activity className="w-4 h-4 text-emerald-500" />
+          <Activity className="w-3.5 h-3.5 text-emerald-500" />
           <span>Siklus Nyamuk Aedes</span>
         </button>
 
         <button
           onClick={() => setActiveEduTab('perbedaan')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
             activeEduTab === 'perbedaan'
-              ? 'bg-slate-900 text-white shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+              ? 'bg-slate-900 text-white'
+              : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
           }`}
         >
-          <Layers className="w-4 h-4 text-cyan-500" />
+          <Layers className="w-3.5 h-3.5 text-cyan-500" />
           <span>Perbandingan Nyamuk</span>
         </button>
 
         <button
           onClick={() => setActiveEduTab('kuis')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
             activeEduTab === 'kuis'
-              ? 'bg-slate-900 text-white shadow-xs'
-              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+              ? 'bg-slate-900 text-white'
+              : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'
           }`}
         >
-          <Award className="w-4 h-4 text-amber-500" />
-          <span>Kuis Jumantik Cerdas</span>
+          <Award className="w-3.5 h-3.5 text-amber-500" />
+          <span>Kuis Jumantik</span>
         </button>
       </div>
 
       {/* Render Subtab Content */}
+      {activeEduTab === 'galeri' && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 space-y-4">
+          <div>
+            <h3 className="text-sm sm:text-base font-semibold text-slate-900">
+              Pusat Edukasi Multimedia: Video Pembelajaran & Poster 3M Plus
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Materi visual resmi dari Kementerian Kesehatan RI dan Pokja DBD untuk edukasi keluarga dan kader jumantik lingkungan.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <span className="font-semibold text-slate-900 block text-xs sm:text-sm">
+                🎥 Panduan Video Praktik 3M+ di Rumah
+              </span>
+              <p className="text-slate-600 leading-relaxed text-xs">
+                Video tutorial langkah demi langkah menguras bak mandi, menutup drum penampungan toren air, dan memanfaatkan kembali barang bekas untuk menghentikan perkembangbiakan nyamuk.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <span className="font-semibold text-slate-900 block text-xs sm:text-sm">
+                📑 Poster & Infografis Edukasi Warga
+              </span>
+              <p className="text-slate-600 leading-relaxed text-xs">
+                Poster dapat diunduh atau dibagikan ke grup WhatsApp RT/RW sebagai materi sosialisasi pencegahan demam berdarah dengue di lingkungan permukiman.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeEduTab === 'triase' && <SymptomTriage onOpenSos={onOpenSos} />}
       {activeEduTab === 'siklus' && <MosquitoLifecycle />}
       {activeEduTab === 'kuis' && <JumantikQuiz />}

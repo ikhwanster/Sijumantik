@@ -36,9 +36,13 @@ import { playAlertTone } from '../../utils/audioAlert';
 import { speakIndonesian } from '../../utils/speechHelper';
 import { AiJentikScanner } from './AiJentikScanner';
 
+import { UserProfile } from '../../types/auth';
+
 interface InspectionChecklistProps {
   onSaveInspection: (record: HomeInspectionRecord) => void;
   onOpenAiScanner?: () => void;
+  currentUser?: UserProfile | null;
+  onAwardPoints?: (stars: number, points: number) => void;
 }
 
 const CONTAINER_ITEMS: Array<{ 
@@ -144,23 +148,35 @@ const CONTAINER_ITEMS: Array<{
 
 export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
   onSaveInspection,
+  currentUser,
+  onAwardPoints
 }) => {
   // Stored profile for elderly & moms so they don't have to re-type
   const [inspectorName, setInspectorName] = useState(() => {
-    return localStorage.getItem('sijumantik_warga_name') || 'Ibu Siti Rahayu';
+    return currentUser?.name || localStorage.getItem('sijumantik_warga_name') || 'Ibu Hj. Siti Aminah';
   });
   const [houseAddress, setHouseAddress] = useState(() => {
-    return localStorage.getItem('sijumantik_warga_address') || 'Jl. Mawar Melati No. 18';
+    return currentUser?.address || localStorage.getItem('sijumantik_warga_address') || 'Jl. Mawar Melati No. 18';
   });
   const [rt, setRt] = useState(() => {
-    return localStorage.getItem('sijumantik_warga_rt') || '02';
+    return currentUser?.rt || localStorage.getItem('sijumantik_warga_rt') || '02';
   });
   const [rw, setRw] = useState(() => {
-    return localStorage.getItem('sijumantik_warga_rw') || '02';
+    return currentUser?.rw || localStorage.getItem('sijumantik_warga_rw') || '02';
   });
   const [kelurahan, setKelurahan] = useState(() => {
-    return localStorage.getItem('sijumantik_warga_kelurahan') || 'Kelurahan Sukamaju';
+    return currentUser?.kelurahan || localStorage.getItem('sijumantik_warga_kelurahan') || 'Kelurahan Sukamaju';
   });
+
+  useEffect(() => {
+    if (currentUser) {
+      setInspectorName(currentUser.name);
+      setHouseAddress(currentUser.address);
+      setRt(currentUser.rt);
+      setRw(currentUser.rw);
+      setKelurahan(currentUser.kelurahan);
+    }
+  }, [currentUser]);
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [notes, setNotes] = useState('');
@@ -169,7 +185,24 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
   const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
   const [justSubmittedClean, setJustSubmittedClean] = useState(false);
 
-  const [gpsCoordinates] = useState({ lat: -6.2048, lng: 106.8515 });
+  const [gpsCoordinates, setGpsCoordinates] = useState({ lat: -6.2048, lng: 106.8515 });
+
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setGpsCoordinates({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          });
+        },
+        () => {
+          // Fallback to default
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    }
+  }, []);
 
   // Inspection Points state
   const [points, setPoints] = useState<InspectionPoint[]>(() =>
@@ -221,6 +254,7 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
     cleanPoints[4].actionTaken = 'tutup';
 
     setPoints(cleanPoints);
+    onAwardPoints?.(5, 15);
     playAlertTone('success');
     speakIndonesian("Alhamdulillah! Semua wadah ditandai bersih dan bebas jentik nyamuk.");
     confetti({
@@ -278,6 +312,7 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
     };
 
     onSaveInspection(record);
+    onAwardPoints?.(15, 35);
 
     if (isClean) {
       setJustSubmittedClean(true);
@@ -329,8 +364,8 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
         <div className="relative z-10 space-y-3">
           {/* Header Tag */}
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="inline-flex items-center gap-2 bg-amber-400 text-emerald-950 text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-full shadow-md">
-              <Smile className="w-4 h-4 text-emerald-900" />
+            <div className="inline-flex items-center gap-1.5 bg-emerald-700 text-white text-xs font-semibold px-2.5 py-1 rounded-md border border-emerald-600">
+              <Smile className="w-3.5 h-3.5" />
               <span>Gerakan 1 Rumah 1 Jumantik (1R1J)</span>
             </div>
 
@@ -338,38 +373,38 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
             <button
               type="button"
               onClick={handleReadFormAloud}
-              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs sm:text-sm px-3.5 py-1.5 rounded-full border border-white/30 transition-all cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white font-medium text-xs px-2.5 py-1 rounded-md border border-white/20 transition-colors cursor-pointer"
             >
-              <Volume2 className="w-4 h-4 text-amber-300 animate-pulse" />
-              <span>🔊 Dengarkan Panduan Suara</span>
+              <Volume2 className="w-3.5 h-3.5 text-emerald-300" />
+              <span>Dengarkan Panduan Suara</span>
             </button>
           </div>
 
           {/* Title */}
           <div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight leading-snug">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight leading-snug">
               Formulir Pantau Jentik Rumah Tangga
             </h2>
-            <p className="text-sm sm:text-base text-emerald-100 mt-1 leading-relaxed">
-              Assalamu'alaikum <strong>{inspectorName}</strong>! Cukup 5 menit seminggu sekali untuk melindungi keluarga dari gigitan nyamuk Demam Berdarah (DBD).
+            <p className="text-xs sm:text-sm text-emerald-100 mt-1 leading-relaxed">
+              Assalamu'alaikum <strong>{inspectorName}</strong>. Pemeriksaan berkala 5 menit seminggu sekali untuk melindungi keluarga dari Demam Berdarah (DBD).
             </p>
           </div>
 
           {/* Household Profile Banner (Stored Profile) */}
-          <div className="mt-4 p-4 bg-emerald-950/70 border border-emerald-400/40 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shrink-0 shadow-inner">
-                <Home className="w-5 h-5 text-amber-300" />
+          <div className="mt-3 p-3 bg-emerald-950/60 border border-emerald-500/30 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-700 flex items-center justify-center text-white shrink-0">
+                <Home className="w-4 h-4 text-emerald-200" />
               </div>
               <div>
-                <div className="font-extrabold text-white text-sm sm:text-base flex items-center gap-2">
+                <div className="font-semibold text-white text-xs sm:text-sm flex items-center gap-1.5">
                   <span>{inspectorName}</span>
-                  <span className="text-xs font-semibold text-emerald-300 bg-emerald-900/80 px-2 py-0.5 rounded-md border border-emerald-500/40">
+                  <span className="text-[11px] font-medium text-emerald-300 bg-emerald-900 px-1.5 py-0.2 rounded border border-emerald-600/40">
                     RT {rt} / RW {rw}
                   </span>
                 </div>
                 <div className="text-xs text-emerald-200 mt-0.5">
-                  📍 {houseAddress}, {kelurahan}
+                  {houseAddress}, {kelurahan}
                 </div>
               </div>
             </div>
@@ -377,10 +412,10 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
             <button
               type="button"
               onClick={() => setIsEditingProfile(!isEditingProfile)}
-              className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 text-emerald-100 font-bold px-3 py-1.5 rounded-xl border border-white/20 text-xs transition-colors shrink-0"
+              className="inline-flex items-center gap-1 bg-white/10 hover:bg-white/20 text-emerald-100 font-medium px-2.5 py-1 rounded-md border border-white/20 text-xs transition-colors shrink-0 cursor-pointer"
             >
-              <Edit3 className="w-3.5 h-3.5 text-amber-300" />
-              <span>{isEditingProfile ? 'Batal Ubah' : 'Ubah Nama / Alamat'}</span>
+              <Edit3 className="w-3 h-3 text-emerald-300" />
+              <span>{isEditingProfile ? 'Batal' : 'Ubah Data'}</span>
             </button>
           </div>
 
@@ -460,17 +495,17 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
       </div>
 
       {/* 2. ONE-TOUCH MAGIC BUTTON: "Alhamdulillah Semua Wadah Bersih" */}
-      <div className="bg-gradient-to-r from-amber-100 via-amber-50 to-emerald-50 border-2 border-amber-400 rounded-3xl p-4 sm:p-5 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5 text-center sm:text-left">
-          <div className="w-12 h-12 rounded-2xl bg-amber-400 text-amber-950 flex items-center justify-center text-2xl shrink-0 shadow-md">
-            🌟
+      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-3 text-center sm:text-left">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center text-xl shrink-0">
+            ✨
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-black text-slate-900">
-              Tombol Cepat Cek Semua Wadah
+            <h3 className="text-sm font-semibold text-slate-900">
+              Pemeriksaan Cepat Seluruh Wadah
             </h3>
-            <p className="text-xs sm:text-sm text-slate-600">
-              Jika Ibu/Bapak sudah mengecek dan seluruh wadah air di rumah bersih tanpa jentik:
+            <p className="text-xs text-slate-600">
+              Jika semua 10 wadah air di rumah sudah diperiksa dan bersih dari jentik:
             </p>
           </div>
         </div>
@@ -478,37 +513,37 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
         <button
           type="button"
           onClick={handleSetAllClean}
-          className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-black text-sm sm:text-base px-6 py-3.5 rounded-2xl shadow-lg shadow-emerald-700/25 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer border border-emerald-400"
+          className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs sm:text-sm px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
         >
-          <ThumbsUp className="w-5 h-5 text-amber-300" />
-          <span>✨ Alhamdulillah, Semua Bersih!</span>
+          <ThumbsUp className="w-4 h-4" />
+          <span>Tandai Semua Bersih</span>
         </button>
       </div>
 
       {/* 3. Main Form Checklist Cards */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 gap-2">
             <div>
-              <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              <h3 className="text-sm sm:text-base font-semibold text-slate-900 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span>Pemeriksaan 10 Titik Wadah Air di Rumah:</span>
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
-                Tekan tombol hijau <strong>"Bersih 👍"</strong> jika air jernih, atau merah <strong>"Ada Jentik ⚠️"</strong> jika terlihat jentik bergerak.
+                Pilih status wadah air di bawah ini untuk pencatatan Satu Rumah Satu Jumantik.
               </p>
             </div>
 
-            <div className="flex items-center gap-1.5 self-start sm:self-auto bg-emerald-50 text-emerald-800 font-bold text-xs px-3 py-1.5 rounded-xl border border-emerald-200">
-              <span>Status ABJ Rumah:</span>
-              <strong className={isClean ? 'text-emerald-700' : 'text-red-600'}>
+            <div className="flex items-center gap-1.5 self-start sm:self-auto bg-slate-100 text-slate-800 font-medium text-xs px-2.5 py-1 rounded-md border border-slate-200">
+              <span>Status Rumah:</span>
+              <strong className={isClean ? 'text-emerald-700 font-semibold' : 'text-rose-600 font-semibold'}>
                 {isClean ? '100% Bebas Jentik' : `${positiveContainers} Positif Jentik`}
               </strong>
             </div>
           </div>
 
           {/* 10 Container Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {points.map((point, index) => {
               const itemInfo = CONTAINER_ITEMS[index];
               const PointIcon = itemInfo?.icon || Bath;
@@ -517,21 +552,21 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
               return (
                 <div
                   key={point.id}
-                  className={`p-4 rounded-2xl border-2 transition-all space-y-3 ${
+                  className={`p-3.5 rounded-xl border transition-colors space-y-2.5 ${
                     hasLarvae
-                      ? 'bg-red-50/90 border-red-400 ring-2 ring-red-400/30'
+                      ? 'bg-rose-50/70 border-rose-300'
                       : point.hasStandingWater
-                      ? 'bg-emerald-50/60 border-emerald-300'
-                      : 'bg-slate-50/80 border-slate-200 hover:border-slate-300'
+                      ? 'bg-emerald-50/40 border-emerald-200'
+                      : 'bg-slate-50/70 border-slate-200 hover:border-slate-300'
                   }`}
                 >
                   {/* Card Header */}
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-2.5">
                       <div
-                        className={`w-11 h-11 rounded-2xl flex items-center justify-center text-xl shrink-0 shadow-2xs ${
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 ${
                           hasLarvae
-                            ? 'bg-red-600 text-white'
+                            ? 'bg-rose-600 text-white'
                             : point.hasStandingWater
                             ? 'bg-emerald-600 text-white'
                             : 'bg-slate-200 text-slate-700'
@@ -540,10 +575,10 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
                         <span>{itemInfo?.emoji || '💧'}</span>
                       </div>
                       <div>
-                        <h4 className="font-extrabold text-sm sm:text-base text-slate-900 leading-snug">
+                        <h4 className="font-semibold text-xs sm:text-sm text-slate-900 leading-snug">
                           {point.name}
                         </h4>
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <p className="text-[11px] text-slate-500">
                           {itemInfo?.subtitle}
                         </p>
                       </div>
@@ -556,15 +591,15 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
                         setActivePointIndex(index);
                         setIsAiScannerOpen(true);
                       }}
-                      className="p-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold transition-colors shrink-0"
+                      className="p-1 rounded-md bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs transition-colors shrink-0 cursor-pointer"
                       title="Pindai Wadah Ini dengan AI"
                     >
-                      <Sparkles className="w-4 h-4 text-amber-600" />
+                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                     </button>
                   </div>
 
-                  {/* Big Thumb Buttons for Warga: Bersih vs Ada Jentik */}
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  {/* Minimalist Buttons for Warga: Bersih vs Ada Jentik */}
+                  <div className="grid grid-cols-2 gap-2 pt-0.5">
                     {/* Button 1: Bersih / Aman */}
                     <button
                       type="button"
@@ -576,14 +611,14 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
                         });
                         playAlertTone('success');
                       }}
-                      className={`py-3 px-2 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      className={`py-2 px-2 rounded-lg font-medium text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                         point.hasStandingWater && !point.hasLarvae
-                          ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30 scale-[1.02] border-2 border-emerald-700'
-                          : 'bg-white hover:bg-emerald-50 text-slate-700 border-2 border-slate-200'
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200'
                       }`}
                     >
-                      <Check className="w-4 h-4 text-emerald-400" />
-                      <span>Bersih / Aman 👍</span>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Bersih / Aman</span>
                     </button>
 
                     {/* Button 2: Ada Jentik */}
@@ -596,43 +631,40 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
                           actionTaken: 'kuras',
                         });
                         playAlertTone('warning');
-                        speakIndonesian(`Perhatian: ${point.name} ditemukan jentik. Mohon segera kuras atau taburkan abate.`);
+                        speakIndonesian(`Perhatian: ${point.name} ditemukan jentik.`);
                       }}
-                      className={`py-3 px-2 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      className={`py-2 px-2 rounded-lg font-medium text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer ${
                         hasLarvae
-                          ? 'bg-red-600 text-white shadow-md shadow-red-600/30 scale-[1.02] border-2 border-red-700 animate-pulse'
-                          : 'bg-white hover:bg-red-50 text-slate-700 border-2 border-slate-200'
+                          ? 'bg-rose-600 text-white'
+                          : 'bg-white hover:bg-rose-50 text-slate-700 border border-slate-200'
                       }`}
                     >
-                      <AlertTriangle className="w-4 h-4 text-red-400" />
-                      <span>Ada Jentik! ⚠️</span>
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      <span>Ada Jentik</span>
                     </button>
                   </div>
 
                   {/* Action selector if positive larvae */}
                   {hasLarvae && (
-                    <div className="p-3 bg-red-100/90 border border-red-300 rounded-xl space-y-1.5 text-xs text-red-950 animate-in fade-in">
-                      <div className="font-bold flex items-center gap-1.5">
-                        <AlertTriangle className="w-4 h-4 text-red-700" />
-                        <span>Tindakan PSN 3M+ yang Dilakukan:</span>
-                      </div>
+                    <div className="p-2.5 bg-rose-100/70 border border-rose-200 rounded-lg space-y-1 text-xs text-rose-950">
+                      <span className="font-semibold text-[11px] block">Tindakan PSN 3M+:</span>
                       <select
                         value={point.actionTaken}
                         onChange={(e) => updatePoint(index, { actionTaken: e.target.value as any })}
-                        className="w-full text-xs sm:text-sm font-bold bg-white border-2 border-red-400 rounded-lg p-2 text-slate-900"
+                        className="w-full text-xs font-medium bg-white border border-rose-300 rounded-md p-1.5 text-slate-900"
                       >
-                        <option value="kuras">🪣 Sudah Dikuras & Disikat Bersih</option>
-                        <option value="tutup">🔒 Sudah Ditutup Rapat</option>
-                        <option value="abate">💊 Sudah Ditaburi Bubuk Abate</option>
-                        <option value="pelihara_ikan">🐟 Diberi Ikan Pemakan Jentik (Cupang/Guppy)</option>
-                        <option value="bersihkan">🗑️ Dibuang / Dikeringkan</option>
+                        <option value="kuras">Dikuras & Disikat Bersih</option>
+                        <option value="tutup">Ditutup Rapat</option>
+                        <option value="abate">Ditaburi Bubuk Abate</option>
+                        <option value="pelihara_ikan">Diberi Ikan Pemakan Jentik</option>
+                        <option value="bersihkan">Dibuang / Dikeringkan</option>
                       </select>
                     </div>
                   )}
 
                   {/* Friendly health tip */}
-                  <div className="text-[11px] text-slate-500 italic bg-white/70 px-2 py-1 rounded-lg border border-slate-100">
-                    💡 <strong>Tips:</strong> {itemInfo?.tips}
+                  <div className="text-[11px] text-slate-500 bg-white/60 px-2 py-0.5 rounded border border-slate-100">
+                    Tips: {itemInfo?.tips}
                   </div>
                 </div>
               );
@@ -641,21 +673,21 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
         </div>
 
         {/* 4. Optional Photo Upload (Bukti Foto Wadah Bersih) */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-3">
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
-              <h4 className="font-extrabold text-sm sm:text-base text-slate-900 flex items-center gap-2">
-                <Camera className="w-5 h-5 text-emerald-600" />
-                <span>Foto Bukti Wadah Air (Opsional):</span>
+              <h4 className="font-semibold text-xs sm:text-sm text-slate-900 flex items-center gap-1.5">
+                <Camera className="w-4 h-4 text-emerald-600" />
+                <span>Foto Bukti Wadah Air (Opsional)</span>
               </h4>
               <p className="text-xs text-slate-500">
-                Ambil foto bak mandi atau toren yang sudah bersih untuk laporan ke kader RT.
+                Ambil foto bak mandi atau wadah yang sudah bersih sebagai lampiran.
               </p>
             </div>
 
-            <label className="flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-2 border-emerald-300 font-bold text-xs sm:text-sm px-4 py-2.5 rounded-2xl cursor-pointer transition-colors shadow-2xs">
-              <Camera className="w-4 h-4 text-emerald-700" />
-              <span>{proofPhoto ? 'Ganti Foto' : '📷 Ambil Foto / Pilih Gambar'}</span>
+            <label className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-medium text-xs px-3 py-1.5 rounded-lg cursor-pointer transition-colors">
+              <Camera className="w-3.5 h-3.5 text-slate-600" />
+              <span>{proofPhoto ? 'Ganti Foto' : 'Pilih Foto'}</span>
               <input
                 type="file"
                 accept="image/*"
@@ -667,107 +699,94 @@ export const InspectionChecklist: React.FC<InspectionChecklistProps> = ({
           </div>
 
           {proofPhoto && (
-            <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center gap-3">
+            <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-3">
               <img
                 src={proofPhoto}
                 alt="Bukti Wadah"
-                className="w-16 h-16 object-cover rounded-xl border-2 border-emerald-500 shadow-xs"
+                className="w-14 h-14 object-cover rounded-lg border border-slate-200"
               />
-              <div className="text-xs text-emerald-900">
-                <p className="font-bold">✅ Foto berhasil dilampirkan</p>
-                <p className="text-slate-500 text-[11px]">Foto ini akan tercatat dalam kartu pantau 1R1J.</p>
+              <div className="text-xs text-slate-700">
+                <p className="font-medium text-emerald-700">✓ Foto terlampir</p>
+                <p className="text-slate-500 text-[11px]">Tercatat dalam rekam inspeksi 1R1J.</p>
               </div>
             </div>
           )}
         </div>
 
         {/* 5. Catatan Tambahan (Simpel) */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-2">
-          <label className="block font-bold text-xs sm:text-sm text-slate-800">
-            Catatan Tambahan Warga (Opsional):
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 space-y-2">
+          <label className="block font-medium text-xs sm:text-sm text-slate-800">
+            Catatan Tambahan (Opsional):
           </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Tulis catatan jika ada, contoh: Bak mandi sudah dikuras pagi ini, toren sudah tertutup rapat..."
+            placeholder="Tulis catatan kondisi lingkungan rumah jika ada..."
             rows={2}
-            className="w-full text-xs sm:text-sm font-medium bg-slate-50 border border-slate-300 rounded-2xl p-3 focus:bg-white focus:ring-2 focus:ring-emerald-500"
+            className="w-full text-xs sm:text-sm font-normal bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:bg-white focus:ring-1 focus:ring-slate-900"
           />
         </div>
 
-        {/* 6. Big Encouraging Result & Submit Button */}
-        <div
-          className={`p-5 rounded-3xl border-2 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4 transition-all ${
-            isClean
-              ? 'bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100 border-emerald-400 text-emerald-950'
-              : 'bg-gradient-to-r from-red-50 via-rose-50 to-amber-50 border-red-400 text-red-950'
-          }`}
-        >
-          <div className="flex items-center gap-4 text-center sm:text-left">
+        {/* 6. Big Encouraging Result & Submit Button - Minimalist */}
+        <div className="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-center sm:text-left">
             <div
-              className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white font-black text-2xl shrink-0 shadow-md ${
-                isClean ? 'bg-emerald-600' : 'bg-red-600'
+              className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 ${
+                isClean ? 'bg-emerald-600' : 'bg-rose-600'
               }`}
             >
               {isClean ? '100%' : '⚠️'}
             </div>
             <div>
-              <h4 className="font-black text-base sm:text-lg">
-                {isClean
-                  ? '🌟 ALHAMDULILLAH, RUMAH 100% BEBAS JENTIK'
-                  : '⚠️ PERHATIAN: DITEMUKAN JENTIK NYAMUK'}
+              <h4 className="font-semibold text-sm sm:text-base">
+                {isClean ? 'Kondisi Rumah: Bebas Jentik' : 'Kondisi Rumah: Ditemukan Jentik'}
               </h4>
-              <p className="text-xs sm:text-sm opacity-90">
+              <p className="text-xs text-slate-300">
                 {isClean
-                  ? 'Keluarga & tetangga terlindungi dari bahaya nyamuk Aedes aegypti!'
-                  : `Terdapat ${positiveContainers} wadah yang ada jentik. Mohon pastikan sudah dikuras/ditabur abate.`}
+                  ? 'Semua wadah terbebas dari potensi sarang nyamuk Aedes aegypti.'
+                  : `${positiveContainers} wadah perlu tindakan penaburan abate atau pengurasan.`}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            <button
-              type="submit"
-              className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white font-black text-base sm:text-lg px-8 py-4 rounded-2xl shadow-xl shadow-emerald-600/30 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-emerald-400"
-            >
-              <Send className="w-5 h-5 text-amber-300" />
-              <span>KIRIM LAPORAN SEKARANG</span>
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs sm:text-sm px-5 py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+          >
+            <Send className="w-4 h-4" />
+            <span>Kirim Laporan 1R1J</span>
+          </button>
         </div>
       </form>
 
       {/* 7. Success Banner with WhatsApp Button after submission */}
       {justSubmittedClean && (
-        <div className="bg-gradient-to-r from-emerald-800 to-teal-900 text-white rounded-3xl p-6 shadow-2xl border-2 border-emerald-400 text-center space-y-4 animate-in zoom-in">
-          <div className="w-16 h-16 bg-amber-400 text-emerald-950 rounded-full flex items-center justify-center text-3xl mx-auto shadow-lg">
-            🌺
-          </div>
+        <div className="bg-emerald-900 text-white rounded-2xl p-5 border border-emerald-700 text-center space-y-3 animate-in fade-in">
           <div>
-            <h3 className="text-xl sm:text-2xl font-black">
-              Terima Kasih Banyak, {inspectorName}!
+            <h3 className="text-base sm:text-lg font-bold">
+              Laporan Berhasil Disimpan
             </h3>
-            <p className="text-xs sm:text-sm text-emerald-100 mt-1 max-w-md mx-auto">
-              Laporan inspeksi rumah Ibu sudah berhasil disimpan ke sistem SiJumantik. Bagikan ke grup WhatsApp RT agar warga lain ikut bersemangat!
+            <p className="text-xs text-emerald-100 mt-0.5 max-w-md mx-auto">
+              Terima kasih {inspectorName}. Data inspeksi Satu Rumah Satu Jumantik telah diperbarui.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
             <button
               type="button"
               onClick={shareToWhatsapp}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-sm sm:text-base px-6 py-3 rounded-2xl shadow-lg flex items-center gap-2 active:scale-95 transition-all"
+              className="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs sm:text-sm px-4 py-2 rounded-lg transition-colors cursor-pointer"
             >
-              <Share2 className="w-5 h-5" />
-              <span>Bagikan ke Grup WA RT / Dawis</span>
+              <Share2 className="w-4 h-4" />
+              <span>Bagikan ke Grup WA RT</span>
             </button>
 
             <button
               type="button"
               onClick={() => setJustSubmittedClean(false)}
-              className="bg-white/20 hover:bg-white/30 text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-2xl transition-colors"
+              className="inline-flex items-center bg-white/10 hover:bg-white/20 text-white font-medium text-xs px-3 py-2 rounded-lg transition-colors cursor-pointer"
             >
-              Tutup Pesan
+              Tutup
             </button>
           </div>
         </div>

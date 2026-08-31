@@ -6,7 +6,8 @@ import {
   Users, 
   BookOpen, 
   PhoneCall,
-  Sparkles
+  Trophy,
+  AlertTriangle
 } from 'lucide-react';
 import { NavTab } from './Navbar';
 
@@ -22,15 +23,18 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
   openSosModal,
 }) => {
   const tabs = [
-    { id: 'jumantik' as NavTab, label: 'Pantau 1R1J', icon: CheckCircle2, color: 'text-emerald-600' },
-    { id: 'peta' as NavTab, label: 'Peta Wilayah', icon: MapPin, color: 'text-teal-600' },
-    { id: 'puskesmas' as NavTab, label: 'Puskesmas', icon: Building2, color: 'text-cyan-600' },
-    { id: 'komunitas' as NavTab, label: 'Lapor Got', icon: Users, color: 'text-emerald-600' },
-    { id: 'edukasi' as NavTab, label: 'Edukasi 3M+', icon: BookOpen, color: 'text-amber-600' },
+    { id: 'jumantik' as NavTab, label: 'Pantau', emoji: '🏡', icon: CheckCircle2 },
+    { id: 'misi' as NavTab, label: 'Misi Cilik', emoji: '🏆', icon: Trophy },
+    { id: 'peta' as NavTab, label: 'Peta RT', emoji: '🗺️', icon: MapPin },
+    { id: 'komunitas' as NavTab, label: 'Lapor Got', emoji: '📢', icon: Users },
+    { id: 'puskesmas' as NavTab, label: 'Puskesmas', emoji: '🏥', icon: Building2 },
   ];
 
   return (
-    <div className="fixed bottom-0 inset-x-0 z-40 bg-white/98 backdrop-blur-md border-t-2 border-emerald-200 shadow-2xl md:hidden px-2 py-1.5 flex items-center justify-around">
+    <nav 
+      aria-label="Navigasi Bawah Layar HP"
+      className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 md:hidden px-2 py-1 flex items-center justify-around"
+    >
       {tabs.map((t) => {
         const Icon = t.icon;
         const isActive = activeTab === t.id;
@@ -38,14 +42,14 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
           <button
             key={t.id}
             onClick={() => setActiveTab(t.id)}
-            className={`flex flex-col items-center justify-center py-1 px-2 rounded-2xl transition-all cursor-pointer ${
+            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-lg transition-colors cursor-pointer ${
               isActive
-                ? 'bg-emerald-100/90 text-emerald-950 font-black scale-105 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'text-slate-950 font-semibold'
+                : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-700' : 'text-slate-500'}`} />
-            <span className={`text-[10px] tracking-tight mt-0.5 ${isActive ? 'font-black' : 'font-semibold'}`}>
+            <div className="text-base leading-none">{t.emoji}</div>
+            <span className={`text-[10px] tracking-tight mt-0.5 ${isActive ? 'font-semibold text-slate-900' : 'font-normal text-slate-500'}`}>
               {t.label}
             </span>
           </button>
@@ -55,11 +59,11 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
       {/* SOS Button on Mobile bar */}
       <button
         onClick={openSosModal}
-        className="flex flex-col items-center justify-center py-1 px-2.5 bg-red-600 text-white rounded-2xl font-black text-[10px] shadow-md shadow-red-600/30 active:scale-95 animate-pulse"
+        className="flex flex-col items-center justify-center py-1 px-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-medium text-[10px] cursor-pointer"
       >
-        <PhoneCall className="w-4 h-4 text-amber-300" />
-        <span className="mt-0.5">SOS</span>
+        <span className="text-sm leading-none">🚨</span>
+        <span className="mt-0.5 text-white font-semibold">SOS</span>
       </button>
-    </div>
+    </nav>
   );
 };

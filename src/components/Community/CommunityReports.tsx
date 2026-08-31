@@ -40,7 +40,40 @@ export const CommunityReports: React.FC<CommunityReportsProps> = ({
   const [category, setCategory] = useState<CommunityReport['category']>('genangan_liar');
   const [address, setAddress] = useState('');
   const [rtRw, setRtRw] = useState('RT 03 / RW 03');
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number }>({ lat: -6.2135, lng: 106.8422 });
+  const [isGettingGps, setIsGettingGps] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=600&q=80');
+
+  const handleCaptureGps = () => {
+    if (!('geolocation' in navigator)) {
+      alert('GPS tidak didukung oleh browser Anda.');
+      return;
+    }
+    setIsGettingGps(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setCoordinates({ lat: latitude, lng: longitude });
+        setIsGettingGps(false);
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.display_name) {
+              setAddress(data.display_name.split(',').slice(0, 3).join(', '));
+            }
+          }
+        } catch {
+          // Keep current address if reverse geo fails
+        }
+      },
+      () => {
+        setIsGettingGps(false);
+        alert('Gagal mengambil titik koordinat GPS HP. Pastikan izin lokasi diaktifkan.');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   const filteredReports = reports.filter((r) => {
     if (filterCategory !== 'all' && r.category !== filterCategory) return false;
@@ -57,7 +90,7 @@ export const CommunityReports: React.FC<CommunityReportsProps> = ({
       category,
       address,
       rtRw,
-      coordinates: { lat: -6.2135, lng: 106.8422 },
+      coordinates: coordinates,
       photoUrl,
       createdAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
       upvotes: 1,
@@ -274,7 +307,18 @@ export const CommunityReports: React.FC<CommunityReportsProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Alamat / Patokan Lokasi:</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-slate-700">Alamat / Patokan Lokasi:</label>
+                <button
+                  type="button"
+                  onClick={handleCaptureGps}
+                  disabled={isGettingGps}
+                  className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-lg border border-blue-200 cursor-pointer"
+                >
+                  <MapPin className="w-3 h-3" />
+                  <span>{isGettingGps ? 'Mengambil GPS...' : '📍 Ambil GPS HP Saya'}</span>
+                </button>
+              </div>
               <input
                 type="text"
                 required
