@@ -10,17 +10,20 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { NavTab } from './Navbar';
+import { UserProfile } from '../types/auth';
 
 interface BottomMobileNavProps {
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
   openSosModal: () => void;
+  currentUser?: UserProfile | null;
 }
 
 export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
   activeTab,
   setActiveTab,
   openSosModal,
+  currentUser,
 }) => {
   const tabs = [
     { id: 'jumantik' as NavTab, label: 'Pantau', emoji: '🏡', icon: CheckCircle2 },
@@ -28,6 +31,7 @@ export const BottomMobileNav: React.FC<BottomMobileNavProps> = ({
     { id: 'peta' as NavTab, label: 'Peta RT', emoji: '🗺️', icon: MapPin },
     { id: 'komunitas' as NavTab, label: 'Lapor Got', emoji: '📢', icon: Users },
     { id: 'puskesmas' as NavTab, label: 'Puskesmas', emoji: '🏥', icon: Building2 },
+    ...(currentUser?.role === 'admin' ? [{ id: 'admin' as NavTab, label: 'Admin', emoji: '🛡️', icon: CheckCircle2 }] : []),
   ];
 
   return (

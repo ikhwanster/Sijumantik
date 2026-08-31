@@ -1,10 +1,12 @@
-export type UserRole = 'anak' | 'warga' | 'kader' | 'puskesmas';
+export type UserRole = 'anak' | 'warga' | 'kader' | 'puskesmas' | 'admin';
 
 export interface UserProfile {
   id: string;
   name: string;
   role: UserRole;
   phone: string;
+  email?: string;
+  authProvider?: 'phone' | 'email' | 'google';
   address: string;
   rt: string;
   rw: string;

@@ -147,80 +147,7 @@ export const INITIAL_FASKES: FaskesFacility[] = [
   }
 ];
 
-export const INITIAL_INSPECTIONS: HomeInspectionRecord[] = [
-  {
-    id: 'insp-1',
-    date: '2026-08-20',
-    inspectorName: 'Ibu Rahmawati (Jumantik Mandiri)',
-    houseAddress: 'Jl. Melati No. 14',
-    rt: '02',
-    rw: '02',
-    kelurahan: 'Kelurahan Sukamaju',
-    coordinates: { lat: -6.2048, lng: 106.8515 },
-    totalContainers: 7,
-    positiveContainers: 0,
-    status: 'bebas_jentik',
-    abjScore: 100,
-    notes: 'Bak mandi telah dikuras, tatakan dispenser kering dan bersih. Abate ditaburkan di tandon luar.',
-    verifiedByKader: true,
-    points: [
-      { id: 'p1', location: 'bak_mandi', name: 'Bak Mandi Utama', icon: 'Bath', hasStandingWater: true, hasLarvae: false, actionTaken: 'kuras' },
-      { id: 'p2', location: 'dispenser', name: 'Tatakan Dispenser', icon: 'CupSoda', hasStandingWater: false, hasLarvae: false, actionTaken: 'bersihkan' },
-      { id: 'p3', location: 'tatakan_pot', name: 'Pot Bunga Teras', icon: 'Flower2', hasStandingWater: false, hasLarvae: false, actionTaken: 'bersihkan' },
-      { id: 'p4', location: 'drum_toren', name: 'Toren Air Cadangan', icon: 'Database', hasStandingWater: true, hasLarvae: false, actionTaken: 'tutup' },
-      { id: 'p5', location: 'tatakan_kulkas', name: 'Tatakan Belakang Kulkas', icon: 'Refrigerator', hasStandingWater: false, hasLarvae: false, actionTaken: 'bersihkan' },
-      { id: 'p6', location: 'talang_air', name: 'Talang Atap Rumah', icon: 'Home', hasStandingWater: false, hasLarvae: false, actionTaken: 'bersihkan' },
-      { id: 'p7', location: 'tempat_minum_hewan', name: 'Tempat Minum Burung', icon: 'Bird', hasStandingWater: true, hasLarvae: false, actionTaken: 'kuras' }
-    ]
-  },
-  {
-    id: 'insp-2',
-    date: '2026-08-19',
-    inspectorName: 'Bpk. Hendra S. (Jumantik Mandiri)',
-    houseAddress: 'Jl. Kali Asri No. 88',
-    rt: '04',
-    rw: '03',
-    kelurahan: 'Kelurahan Sukamaju',
-    coordinates: { lat: -6.2132, lng: 106.8415 },
-    totalContainers: 6,
-    positiveContainers: 2,
-    status: 'positif_jentik',
-    abjScore: 0,
-    notes: 'Ditemukan jentik aktif di ban bekas pekarangan samping dan ember tampungan hujan tanpa tutup. Segera dituang abate dan ban dikeringkan.',
-    verifiedByKader: true,
-    points: [
-      { id: 'p1', location: 'bak_mandi', name: 'Bak Mandi', icon: 'Bath', hasStandingWater: true, hasLarvae: false, actionTaken: 'kuras' },
-      { id: 'p2', location: 'ban_bekas', name: 'Ban Bekas Halaman Belakang', icon: 'CircleDot', hasStandingWater: true, hasLarvae: true, actionTaken: 'bersihkan', notes: 'Banyak jentik lincah bergerak vertikal' },
-      { id: 'p3', location: 'barang_bekas_luar', name: 'Ember Tampung Air Hujan', icon: 'Trash2', hasStandingWater: true, hasLarvae: true, actionTaken: 'abate', notes: 'Diberikan bubuk abate 1 sendok' },
-      { id: 'p4', location: 'tatakan_pot', name: 'Tatakan Pot Aglonema', icon: 'Flower2', hasStandingWater: false, hasLarvae: false, actionTaken: 'bersihkan' },
-      { id: 'p5', location: 'dispenser', name: 'Tatakan Dispenser', icon: 'CupSoda', hasStandingWater: false, hasLarvae: false, actionTaken: 'bersihkan' },
-      { id: 'p6', location: 'drum_toren', name: 'Drum Air Cuci', icon: 'Database', hasStandingWater: true, hasLarvae: false, actionTaken: 'tutup' }
-    ]
-  },
-  {
-    id: 'insp-3',
-    date: '2026-08-18',
-    inspectorName: 'Ibu Siti Aisyah',
-    houseAddress: 'Jl. Dahlia No. 5',
-    rt: '03',
-    rw: '01',
-    kelurahan: 'Kelurahan Sukamaju',
-    coordinates: { lat: -6.2082, lng: 106.8465 },
-    totalContainers: 5,
-    positiveContainers: 1,
-    status: 'waspada_jentik',
-    abjScore: 0,
-    notes: 'Tatakan pot bunga tergenang air hujan dan ada jentik muda. Sudah dibuang dan disikat.',
-    verifiedByKader: true,
-    points: [
-      { id: 'p1', location: 'bak_mandi', name: 'Bak Mandi Kamar 1', icon: 'Bath', hasStandingWater: true, hasLarvae: false, actionTaken: 'kuras' },
-      { id: 'p2', location: 'tatakan_pot', name: 'Tatakan Pot Anggrek', icon: 'Flower2', hasStandingWater: true, hasLarvae: true, actionTaken: 'bersihkan' },
-      { id: 'p3', location: 'dispenser', name: 'Dispenser Dapur', icon: 'CupSoda', hasStandingWater: false, hasLarvae: false, actionTaken: 'bersihkan' },
-      { id: 'p4', location: 'penampungan_ac', name: 'Ember Buangan AC', icon: 'Wind', hasStandingWater: true, hasLarvae: false, actionTaken: 'kuras' },
-      { id: 'p5', location: 'tempat_minum_hewan', name: 'Mangkuk Kucing', icon: 'Cat', hasStandingWater: true, hasLarvae: false, actionTaken: 'kuras' }
-    ]
-  }
-];
+export const INITIAL_INSPECTIONS: HomeInspectionRecord[] = [];
 
 export const INITIAL_CASES: DengueCaseReport[] = [
   {
@@ -304,54 +231,7 @@ export const INITIAL_CASES: DengueCaseReport[] = [
   }
 ];
 
-export const INITIAL_COMMUNITY_REPORTS: CommunityReport[] = [
-  {
-    id: 'rep-1',
-    reporterName: 'Pak Wahyu (Ketua RT 03/RW 03)',
-    title: 'Tumpukan Ban Bekas & Ember di Lahan Kosong Dekat Kali',
-    description: 'Terdapat sekitar 15 ban bekas dan ember cat terbuka yang menampung air hujan berhari-hari. Terlihat jentik nyamuk sangat banyak dan padat. Memerlukan kerja bakti dan pemberian abate.',
-    category: 'genangan_liar',
-    address: 'Lahan Kosong Samping Lapangan Voli RW 03',
-    rtRw: 'RT 03 / RW 03',
-    coordinates: { lat: -6.2135, lng: 106.8422 },
-    photoUrl: 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&w=600&q=80',
-    createdAt: '2026-08-20 11:20',
-    upvotes: 24,
-    status: 'dalam_tindakan',
-    actionNote: 'Satgas Puskesmas telah mengirim 5 kg bubuk Abate dan menjadwalkan kerja bakti hari Sabtu.',
-    verifiedBy: 'Bidan Lestari (Puskesmas)'
-  },
-  {
-    id: 'rep-2',
-    reporterName: 'Ibu Ratna',
-    title: 'Saluran Drainase / Selokan Mampet Penuh Sampah Plastik',
-    description: 'Aliran air selokan tersumbat sampah plastik sehingga terjadi genangan hitam yang tidak mengalir. Sangat berpotensi menjadi sarang nyamuk Culex dan Aedes.',
-    category: 'selokan_mampet',
-    address: 'Jl. Pasar Lama Gang 2',
-    rtRw: 'RT 04 / RW 05',
-    coordinates: { lat: -6.2170, lng: 106.8488 },
-    photoUrl: 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=600&q=80',
-    createdAt: '2026-08-19 15:45',
-    upvotes: 18,
-    status: 'terverifikasi',
-    actionNote: 'Sudah diteruskan ke PPSU / Kelurahan untuk pengerukan saluran.',
-    verifiedBy: 'Bpk. Ahmad (Kader RW 05)'
-  },
-  {
-    id: 'rep-3',
-    reporterName: 'Budi Santoso',
-    title: 'Genangan Air di Bak Penampungan Bangunan Ruko Terbengkalai',
-    description: 'Bangunan ruko samping Alfamart ditinggal kontraktor, lantai dasar tergenang air hujan setinggi 20cm. Ditemukan jutaan jentik.',
-    category: 'fasilitas_umum',
-    address: 'Jl. Boulevard Mawar No. 2',
-    rtRw: 'RT 01 / RW 01',
-    coordinates: { lat: -6.2095, lng: 106.8450 },
-    photoUrl: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=600&q=80',
-    createdAt: '2026-08-21 08:10',
-    upvotes: 31,
-    status: 'menunggu_verifikasi',
-  }
-];
+export const INITIAL_COMMUNITY_REPORTS: CommunityReport[] = [];
 
 export const INITIAL_LOGISTICS: LogisticsItem[] = [
   {

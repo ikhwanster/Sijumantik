@@ -16,7 +16,7 @@ import {
   CommunityReport, 
   LogisticsItem 
 } from '../types/jumantik';
-import { INITIAL_USERS } from '../data/defaultUsers';
+import { DEFAULT_ADMIN_USER } from '../data/defaultUsers';
 import { 
   INITIAL_INSPECTIONS, 
   INITIAL_CASES, 
@@ -30,27 +30,38 @@ const CASES_COLL = 'cases';
 const COMMUNITY_REPORTS_COLL = 'communityReports';
 const LOGISTICS_COLL = 'logistics';
 
+// Legacy dummy user IDs to clean up
+const LEGACY_USER_IDS = ['user-anak-1', 'user-warga-1', 'user-kader-1', 'user-puskesmas-1'];
+
 // --- USERS SERVICE ---
 
 export const subscribeUsers = (onUpdate: (users: UserProfile[]) => void) => {
   const usersRef = collection(db, USERS_COLL);
   
   return onSnapshot(usersRef, async (snapshot) => {
-    if (snapshot.empty) {
-      // Seed default demo users to Firestore
-      console.log('Seeding initial users to Firestore...');
-      for (const u of INITIAL_USERS) {
-        await setDoc(doc(db, USERS_COLL, u.id), u);
+    // Check if any legacy demo users exist and clean them up
+    for (const docSnap of snapshot.docs) {
+      if (LEGACY_USER_IDS.includes(docSnap.id)) {
+        console.log('Cleaning legacy demo user:', docSnap.id);
+        await deleteDoc(doc(db, USERS_COLL, docSnap.id)).catch(() => {});
       }
-      onUpdate(INITIAL_USERS);
-    } else {
-      const usersList: UserProfile[] = [];
-      snapshot.forEach((docSnap) => {
-        usersList.push(docSnap.data() as UserProfile);
-      });
-      // Sort newest or by role
-      onUpdate(usersList);
     }
+
+    const usersList: UserProfile[] = [];
+    snapshot.forEach((docSnap) => {
+      if (!LEGACY_USER_IDS.includes(docSnap.id)) {
+        usersList.push(docSnap.data() as UserProfile);
+      }
+    });
+
+    // If no users at all, add default admin user
+    if (usersList.length === 0) {
+      console.log('Seeding default admin user to Firestore...');
+      await setDoc(doc(db, USERS_COLL, DEFAULT_ADMIN_USER.id), DEFAULT_ADMIN_USER).catch(() => {});
+      usersList.push(DEFAULT_ADMIN_USER);
+    }
+
+    onUpdate(usersList);
   }, (error) => {
     console.error('Error subscribing to users in Firestore:', error);
   });
@@ -67,6 +78,17 @@ export const saveUserToDb = async (user: UserProfile): Promise<void> => {
   }
 };
 
+export const deleteUserFromDb = async (userId: string): Promise<void> => {
+  try {
+    const userDocRef = doc(db, USERS_COLL, userId);
+    await deleteDoc(userDocRef);
+    console.log('User successfully deleted from Firestore:', userId);
+  } catch (error) {
+    console.error('Failed to delete user from Firestore:', error);
+    throw error;
+  }
+};
+
 export const findUserByPhoneOrName = async (phoneOrName: string): Promise<UserProfile | null> => {
   try {
     const usersRef = collection(db, USERS_COLL);
@@ -77,8 +99,9 @@ export const findUserByPhoneOrName = async (phoneOrName: string): Promise<UserPr
     snap.forEach((docSnap) => {
       const u = docSnap.data() as UserProfile;
       if (
-        u.phone.trim() === phoneOrName.trim() ||
-        u.name.toLowerCase().includes(trimmed) ||
+        (u.phone && u.phone.trim() === phoneOrName.trim()) ||
+        (u.email && u.email.trim().toLowerCase() === trimmed) ||
+        (u.name && u.name.toLowerCase().includes(trimmed)) ||
         u.id.toLowerCase() === trimmed
       ) {
         found = u;
@@ -91,27 +114,64 @@ export const findUserByPhoneOrName = async (phoneOrName: string): Promise<UserPr
   }
 };
 
+export const findUserByEmail = async (email: string): Promise<UserProfile | null> => {
+  try {
+    const usersRef = collection(db, USERS_COLL);
+    const snap = await getDocs(usersRef);
+    const trimmed = email.trim().toLowerCase();
+    
+    let found: UserProfile | null = null;
+    snap.forEach((docSnap) => {
+      const u = docSnap.data() as UserProfile;
+      if (u.email && u.email.trim().toLowerCase() === trimmed) {
+        found = u;
+      }
+    });
+    return found;
+  } catch (error) {
+    console.error('Error querying user by email from Firestore:', error);
+    return null;
+  }
+};
+
+export const clearAllUsersAndInspectionsInDb = async (): Promise<void> => {
+  try {
+    // Delete all users except default admin
+    const usersSnap = await getDocs(collection(db, USERS_COLL));
+    for (const docSnap of usersSnap.docs) {
+      await deleteDoc(doc(db, USERS_COLL, docSnap.id));
+    }
+    // Delete all inspections
+    const inspSnap = await getDocs(collection(db, INSPECTIONS_COLL));
+    for (const docSnap of inspSnap.docs) {
+      await deleteDoc(doc(db, INSPECTIONS_COLL, docSnap.id));
+    }
+    // Delete all community reports
+    const repSnap = await getDocs(collection(db, COMMUNITY_REPORTS_COLL));
+    for (const docSnap of repSnap.docs) {
+      await deleteDoc(doc(db, COMMUNITY_REPORTS_COLL, docSnap.id));
+    }
+    // Re-seed default admin
+    await setDoc(doc(db, USERS_COLL, DEFAULT_ADMIN_USER.id), DEFAULT_ADMIN_USER);
+    console.log('Database refreshed and reset with Admin user.');
+  } catch (error) {
+    console.error('Error clearing data from Firestore:', error);
+  }
+};
+
 // --- INSPECTIONS SERVICE ---
 
 export const subscribeInspections = (onUpdate: (inspections: HomeInspectionRecord[]) => void) => {
   const collRef = collection(db, INSPECTIONS_COLL);
 
-  return onSnapshot(collRef, async (snapshot) => {
-    if (snapshot.empty) {
-      console.log('Seeding initial inspections to Firestore...');
-      for (const insp of INITIAL_INSPECTIONS) {
-        await setDoc(doc(db, INSPECTIONS_COLL, insp.id), insp);
-      }
-      onUpdate(INITIAL_INSPECTIONS);
-    } else {
-      const list: HomeInspectionRecord[] = [];
-      snapshot.forEach((docSnap) => {
-        list.push(docSnap.data() as HomeInspectionRecord);
-      });
-      // Sort newest date first
-      list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      onUpdate(list);
-    }
+  return onSnapshot(collRef, (snapshot) => {
+    const list: HomeInspectionRecord[] = [];
+    snapshot.forEach((docSnap) => {
+      list.push(docSnap.data() as HomeInspectionRecord);
+    });
+    // Sort newest date first
+    list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    onUpdate(list);
   }, (error) => {
     console.error('Error subscribing to inspections:', error);
   });
@@ -124,6 +184,17 @@ export const saveInspectionToDb = async (inspection: HomeInspectionRecord): Prom
     console.log('Inspection saved to Firestore:', inspection.id);
   } catch (error) {
     console.error('Failed to save inspection:', error);
+    throw error;
+  }
+};
+
+export const deleteInspectionFromDb = async (inspectionId: string): Promise<void> => {
+  try {
+    const docRef = doc(db, INSPECTIONS_COLL, inspectionId);
+    await deleteDoc(docRef);
+    console.log('Inspection deleted from Firestore:', inspectionId);
+  } catch (error) {
+    console.error('Failed to delete inspection:', error);
     throw error;
   }
 };
@@ -162,25 +233,28 @@ export const saveCaseToDb = async (caseReport: DengueCaseReport): Promise<void> 
   }
 };
 
+export const deleteCaseFromDb = async (caseId: string): Promise<void> => {
+  try {
+    const docRef = doc(db, CASES_COLL, caseId);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error('Failed to delete case:', error);
+    throw error;
+  }
+};
+
 // --- COMMUNITY REPORTS SERVICE ---
 
 export const subscribeCommunityReports = (onUpdate: (reports: CommunityReport[]) => void) => {
   const collRef = collection(db, COMMUNITY_REPORTS_COLL);
 
-  return onSnapshot(collRef, async (snapshot) => {
-    if (snapshot.empty) {
-      for (const r of INITIAL_COMMUNITY_REPORTS) {
-        await setDoc(doc(db, COMMUNITY_REPORTS_COLL, r.id), r);
-      }
-      onUpdate(INITIAL_COMMUNITY_REPORTS);
-    } else {
-      const list: CommunityReport[] = [];
-      snapshot.forEach((docSnap) => {
-        list.push(docSnap.data() as CommunityReport);
-      });
-      list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-      onUpdate(list);
-    }
+  return onSnapshot(collRef, (snapshot) => {
+    const list: CommunityReport[] = [];
+    snapshot.forEach((docSnap) => {
+      list.push(docSnap.data() as CommunityReport);
+    });
+    list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    onUpdate(list);
   }, (error) => {
     console.error('Error subscribing to community reports:', error);
   });
@@ -192,6 +266,16 @@ export const saveCommunityReportToDb = async (report: CommunityReport): Promise<
     await setDoc(docRef, report, { merge: true });
   } catch (error) {
     console.error('Failed to save community report:', error);
+    throw error;
+  }
+};
+
+export const deleteCommunityReportFromDb = async (reportId: string): Promise<void> => {
+  try {
+    const docRef = doc(db, COMMUNITY_REPORTS_COLL, reportId);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error('Failed to delete community report:', error);
     throw error;
   }
 };
@@ -228,3 +312,14 @@ export const saveLogisticsToDb = async (item: LogisticsItem): Promise<void> => {
     throw error;
   }
 };
+
+export const deleteLogisticsFromDb = async (itemId: string): Promise<void> => {
+  try {
+    const docRef = doc(db, LOGISTICS_COLL, itemId);
+    await deleteDoc(docRef);
+  } catch (error) {
+    console.error('Failed to delete logistics item:', error);
+    throw error;
+  }
+};
+

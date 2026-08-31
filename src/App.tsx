@@ -25,7 +25,9 @@ import { AccessibilityBar } from './components/AccessibilityBar';
 import { QuickHelpModal } from './components/QuickHelpModal';
 import { BottomMobileNav } from './components/BottomMobileNav';
 import { AuthModal } from './components/Auth/AuthModal';
+import { AuthGate } from './components/Auth/AuthGate';
 import { KidsMissionHub } from './components/Kids/KidsMissionHub';
+import { AdminManagementHub } from './components/Admin/AdminManagementHub';
 import { setSpeechEnabled } from './utils/speechHelper';
 
 import { 
@@ -49,12 +51,17 @@ import { UserProfile, UserRole } from './types/auth';
 import { 
   subscribeUsers, 
   saveUserToDb, 
+  deleteUserFromDb,
   subscribeInspections, 
   saveInspectionToDb, 
+  deleteInspectionFromDb,
   subscribeCases, 
   saveCaseToDb, 
+  deleteCaseFromDb,
   subscribeCommunityReports, 
   saveCommunityReportToDb, 
+  deleteCommunityReportFromDb,
+  clearAllUsersAndInspectionsInDb,
   subscribeLogistics, 
   saveLogisticsToDb 
 } from './services/dbService';
@@ -72,18 +79,18 @@ export default function App() {
   const [allUsers, setAllUsers] = useState<UserProfile[]>(() => {
     try {
       const saved = localStorage.getItem('sijumantik_users');
-      return saved ? JSON.parse(saved) : INITIAL_USERS;
+      return saved ? JSON.parse(saved) : [];
     } catch {
-      return INITIAL_USERS;
+      return [];
     }
   });
 
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
     try {
       const saved = localStorage.getItem('sijumantik_current_user');
-      return saved ? JSON.parse(saved) : INITIAL_USERS[0];
+      return saved ? JSON.parse(saved) : null;
     } catch {
-      return INITIAL_USERS[0];
+      return null;
     }
   });
 
@@ -280,6 +287,18 @@ export default function App() {
 
   const handleLogoutUser = () => {
     setCurrentUser(null);
+    localStorage.removeItem('sijumantik_current_user');
+  };
+
+  const handleResetAllData = () => {
+    setCurrentUser(null);
+    setAllUsers([]);
+    setInspections([]);
+    setCommunityReports([]);
+    localStorage.removeItem('sijumantik_current_user');
+    localStorage.removeItem('sijumantik_users');
+    localStorage.removeItem('sijumantik_inspections');
+    localStorage.removeItem('sijumantik_community_reports');
   };
 
   const handleAwardStars = async (starsToAdd: number, pointsToAdd: number, missionId?: string) => {
@@ -360,11 +379,81 @@ export default function App() {
     }
   };
 
+  const handleDeleteUser = async (userId: string) => {
+    setAllUsers((prev) => prev.filter((u) => u.id !== userId));
+    if (currentUser?.id === userId) {
+      handleLogoutUser();
+    }
+    try {
+      await deleteUserFromDb(userId);
+    } catch (e) {
+      console.error('Failed to delete user from Firestore:', e);
+    }
+  };
+
+  const handleDeleteInspection = async (inspectionId: string) => {
+    setInspections((prev) => prev.filter((i) => i.id !== inspectionId));
+    try {
+      await deleteInspectionFromDb(inspectionId);
+    } catch (e) {
+      console.error('Failed to delete inspection from Firestore:', e);
+    }
+  };
+
+  const handleSaveCase = async (newOrUpdatedCase: DengueCaseReport) => {
+    setCases((prev) => [newOrUpdatedCase, ...prev.filter((c) => c.id !== newOrUpdatedCase.id)]);
+    try {
+      await saveCaseToDb(newOrUpdatedCase);
+    } catch (e) {
+      console.error('Failed to save case to Firestore:', e);
+    }
+  };
+
+  const handleDeleteCase = async (caseId: string) => {
+    setCases((prev) => prev.filter((c) => c.id !== caseId));
+    try {
+      await deleteCaseFromDb(caseId);
+    } catch (e) {
+      console.error('Failed to delete case from Firestore:', e);
+    }
+  };
+
+  const handleDeleteCommunityReport = async (reportId: string) => {
+    setCommunityReports((prev) => prev.filter((r) => r.id !== reportId));
+    try {
+      await deleteCommunityReportFromDb(reportId);
+    } catch (e) {
+      console.error('Failed to delete community report from Firestore:', e);
+    }
+  };
+
+  const handleResetDatabase = async () => {
+    try {
+      await clearAllUsersAndInspectionsInDb();
+      setInspections([]);
+      setCommunityReports([]);
+    } catch (e) {
+      console.error('Failed to reset database in Firestore:', e);
+    }
+  };
+
   const togglePhoneFrame = () => {
     const next = !mobilePhoneFrame;
     setMobilePhoneFrame(next);
     localStorage.setItem('sijumantik_phone_frame', String(next));
   };
+
+  // If user is not authenticated, show the Login/Register Gate immediately
+  if (!currentUser) {
+    return (
+      <AuthGate
+        onLogin={handleLoginUser}
+        onRegister={handleRegisterUser}
+        allUsers={allUsers}
+        onResetAllData={handleResetAllData}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-emerald-500 selection:text-white pb-20 md:pb-0">
@@ -573,6 +662,26 @@ export default function App() {
 
             {/* Tab 7: Evakuasi & Mitigasi */}
             {activeTab === 'evakuasi' && <EvacuationGuide onOpenSos={() => setIsSosOpen(true)} />}
+
+            {/* Tab 8: Super Admin Management Hub (Hapus, Edit, Tambah, Simpan Data) */}
+            {activeTab === 'admin' && currentUser && (
+              <AdminManagementHub
+                currentUser={currentUser}
+                allUsers={allUsers}
+                inspections={inspections}
+                cases={cases}
+                communityReports={communityReports}
+                onSaveUser={handleRegisterUser}
+                onDeleteUser={handleDeleteUser}
+                onSaveInspection={handleSaveInspection}
+                onDeleteInspection={handleDeleteInspection}
+                onSaveCase={handleSaveCase}
+                onDeleteCase={handleDeleteCase}
+                onSaveCommunityReport={handleAddCommunityReport}
+                onDeleteCommunityReport={handleDeleteCommunityReport}
+                onResetDatabase={handleResetDatabase}
+              />
+            )}
           </main>
 
           {/* Footer */}
@@ -602,6 +711,7 @@ export default function App() {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             openSosModal={() => setIsSosOpen(true)}
+            currentUser={currentUser}
           />
         </div>
       </div>

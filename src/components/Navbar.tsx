@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { UserProfile, UserRole } from '../types/auth';
 
-export type NavTab = 'jumantik' | 'misi' | 'peta' | 'puskesmas' | 'komunitas' | 'prediksi' | 'edukasi' | 'evakuasi';
+export type NavTab = 'jumantik' | 'misi' | 'peta' | 'puskesmas' | 'komunitas' | 'prediksi' | 'edukasi' | 'evakuasi' | 'admin';
 
 interface NavbarProps {
   activeTab: NavTab;
@@ -70,7 +70,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {currentUser?.name || 'Tamu / Warga'}
                 </span>
                 <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-medium px-1.5 py-0.2 rounded border border-emerald-500/30">
-                  {currentUser?.role === 'anak'
+                  {currentUser?.role === 'admin'
+                    ? 'Super Admin 🛡️'
+                    : currentUser?.role === 'anak'
                     ? 'Cilik'
                     : currentUser?.role === 'warga'
                     ? 'Warga'
@@ -88,14 +90,41 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Quick Actions (Auth, Export, Reminder, SOS) */}
           <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Admin Quick Button if logged in as admin */}
+            {currentUser?.role === 'admin' && (
+              <button
+                onClick={() => setActiveTab('admin')}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer border ${
+                  activeTab === 'admin'
+                    ? 'bg-indigo-600 text-white border-indigo-400 shadow-sm'
+                    : 'bg-indigo-950/80 text-indigo-200 border-indigo-700/80 hover:bg-indigo-900'
+                }`}
+                title="Kelola Data Administrator"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-indigo-300" />
+                <span>Kelola Data</span>
+              </button>
+            )}
+
             {/* Login / Switch Account Button */}
             <button
               onClick={openAuthModal}
               className="inline-flex items-center gap-1 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer"
             >
               <User className="w-3.5 h-3.5 text-slate-400" />
-              <span>{currentUser ? 'Akun' : 'Masuk'}</span>
+              <span>Ganti Akun</span>
             </button>
+
+            {currentUser && (
+              <button
+                onClick={onLogout}
+                className="inline-flex items-center gap-1 text-rose-300 hover:text-rose-100 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/60 px-2 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                title="Keluar ke Halaman Masuk"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden xs:inline">Keluar</span>
+              </button>
+            )}
 
             {/* Export Reports */}
             <button
@@ -235,6 +264,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
               <span>Gejala & Triage</span>
             </button>
+
+            {currentUser?.role === 'admin' && (
+              <button
+                onClick={() => setActiveTab('admin')}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                  activeTab === 'admin'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100'
+                }`}
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Admin</span>
+              </button>
+            )}
           </nav>
 
           {/* SOS Emergency Call - Minimalist */}
@@ -253,6 +296,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex lg:hidden overflow-x-auto no-scrollbar gap-1 pt-2 pb-0.5 border-t border-slate-100 mt-2">
           {[
             { id: 'jumantik', label: '1R1J Pantau', icon: CheckCircle2 },
+            ...(currentUser?.role === 'admin' ? [{ id: 'admin', label: '🛡️ Admin Data', icon: ShieldCheck }] : []),
             { id: 'misi', label: 'Misi Cilik', icon: Trophy },
             { id: 'peta', label: 'Peta Wilayah', icon: MapPin },
             { id: 'komunitas', label: 'Lapor Got', icon: Users },
